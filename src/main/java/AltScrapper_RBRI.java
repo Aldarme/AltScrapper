@@ -1,6 +1,4 @@
 
-
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -8,14 +6,18 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Node;
 
 import com.gargoylesoftware.htmlunit.*;
 import com.gargoylesoftware.htmlunit.html.*;
 import com.gargoylesoftware.htmlunit.html.parser.HTMLParser;
 
-public class AltScrapper {
 
+
+
+public class AltScrapper_RBRI {
+	
 	public static void main(String[] args) throws Exception {
 		
 		WebClient webClient = new WebClient();
@@ -51,13 +53,34 @@ public class AltScrapper {
 	    //add file
 	    HtmlForm myForm = page.getFormByName("main");
 	    HtmlFileInput fileInput = myForm.getInputByName("uploaded_file_1");
-	    fileInput.setValueAttribute("/media/Stock/Projets/Suratram/Ressources/Traces_WS/GoogleEarth/ligne1/bus9/kml/segments_7-8/finalFiles/1_LaDouce-Signoret.kml");
+	    //fileInput.setValueAttribute("/media/Stock/Projets/Suratram/Ressources/Traces_WS/GoogleEarth/ligne1/bus9/kml/segments_7-8/finalFiles/1_LaDouce-Signoret.kml");
+	    fileInput.setFiles(new File("/media/Stock/Projets/Suratram/Ressources/Traces_WS/GoogleEarth/ligne1/bus9/kml/segments_7-8/finalFiles/1_LaDouce-Signoret.kml"));
 	    HtmlElement submitBtn = page.getElementByName("submitted");
 	    
 	    //Arrive on the redirected page, where to download the file
 	    page = submitBtn.click();
-	    //System.out.println(page.getUrl());
+	    System.out.println(page.getUrl());
 	    
+	    System.out.println(page.getAnchors());
+	    
+	    // search for the download anchor
+        for (final HtmlAnchor anchor : page.getAnchors()) {
+            // support kmk / kmz
+            if (anchor.asNormalizedText().contains("-map.km")) {
+            	System.out.println("GotIt");
+                Page page3 = anchor.click();
+                
+                try (InputStream is = page3.getWebResponse().getContentAsStream()) {
+                    try (OutputStream os = new FileOutputStream(new File("/home/promet/Bureau/AltScrapper_Result/test.kml"))) {
+                        IOUtils.copy(is, os);
+                        System.out.println("File download success");
+                    }
+                }
+            }
+        }
+	    
+	    
+	    /*
 	    WebWindow window = page.getEnclosingWindow();
 	    
 	    //System.out.println( page.asNormalizedText() );
@@ -82,8 +105,7 @@ public class AltScrapper {
     	
     	downloadedContent.transferTo(output);
 		
+		*/
 		
 	}
-
 }
-
